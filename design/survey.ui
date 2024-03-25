@@ -1,0 +1,620 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="windowModality">
+   <enum>Qt::NonModal</enum>
+  </property>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1229</width>
+    <height>1347</height>
+   </rect>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">background-color: rgb(255, 255, 255);</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <property name="maximumSize">
+    <size>
+     <width>16777215</width>
+     <height>1586</height>
+    </size>
+   </property>
+   <widget class="QLabel" name="description">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>1241</width>
+      <height>151</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>	Sayın Katılımcı, 
+	Bu anket formu “Üretim Hattında Kullanılan Elektrikli El Aletlerini Kullanan Kişilerin Davranış Analizinin Tahmin Edilmesine Yönelik Bir Yöntem Geliştirilmesi” başlıklı 
+	doktora tez çalışmasında kullanılması amaçlanmaktadır. Araştırmanın bilimsel özelliği açısından, soruları içtenlikle yanıtlamanız son derece önemlidir. 
+	Ankete katılanların verdikleri bilgiler kesinlikle gizli tutulacak ve herhangi bir ticari amaçla kullanılmayacaktır. 
+ 	Katılımınız için şimdiden teşekkür ederim.
+</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="teacher_name">
+    <property name="geometry">
+     <rect>
+      <x>700</x>
+      <y>130</y>
+      <width>441</width>
+      <height>151</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>İstanbul Okan Üniversitesi Lisansüstü Eğitim Enstitüsü (2023)
+
+Doktora Öğrencisi: Kader NİKBAY OYLUM
+
+Danışman Öğretim Üyesi: Prof. Dr. Turgay Tugay BİLGİN</string>
+    </property>
+   </widget>
+   <widget class="QRadioButton" name="male_btn_12">
+    <property name="geometry">
+     <rect>
+      <x>-50</x>
+      <y>2520</y>
+      <width>151</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Evet</string>
+    </property>
+   </widget>
+   <widget class="QRadioButton" name="female_btn_31">
+    <property name="geometry">
+     <rect>
+      <x>170</x>
+      <y>2520</y>
+      <width>151</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Hayır</string>
+    </property>
+   </widget>
+   <widget class="QWidget" name="verticalLayoutWidget_13">
+    <property name="geometry">
+     <rect>
+      <x>80</x>
+      <y>290</y>
+      <width>1031</width>
+      <height>951</height>
+     </rect>
+    </property>
+    <layout class="QVBoxLayout" name="verticalLayout_13">
+     <property name="sizeConstraint">
+      <enum>QLayout::SetFixedSize</enum>
+     </property>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <property name="sizeConstraint">
+        <enum>QLayout::SetMinAndMaxSize</enum>
+       </property>
+       <item>
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>1. Cinsiyetiniz:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <item>
+          <widget class="QRadioButton" name="male_btn">
+           <property name="text">
+            <string>Erkek</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="female_btn_2">
+           <property name="text">
+            <string>Kadın</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <item>
+        <widget class="QLabel" name="label_4">
+         <property name="text">
+          <string>2. Yaşınız :</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <item>
+          <widget class="QRadioButton" name="btnyas_18_24">
+           <property name="text">
+            <string>18-24</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="btnyas25_30">
+           <property name="text">
+            <string>25-30</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="btnyas31_40">
+           <property name="text">
+            <string>31-40</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="btnyas40_50">
+           <property name="text">
+            <string>40- 50  </string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="btnyas_50_plus">
+           <property name="text">
+            <string>50 -</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_3">
+       <item>
+        <widget class="QLabel" name="label_5">
+         <property name="text">
+          <string>3. Boy :</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <item>
+          <widget class="QRadioButton" name="btn_boy_160_alt">
+           <property name="text">
+            <string>160 altı  </string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="btnboy_160_169">
+           <property name="text">
+            <string>160 – 169  </string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="btnboy_170_179">
+           <property name="text">
+            <string>170 – 179  </string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="btnboy_180_189">
+           <property name="text">
+            <string>180 – 189         </string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="btnboy_190_plus">
+           <property name="text">
+            <string>190 üstü</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_4">
+       <item>
+        <widget class="QLabel" name="label_6">
+         <property name="text">
+          <string>4. Kilo:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_4">
+         <item>
+          <widget class="QRadioButton" name="btnkilo_61_70">
+           <property name="text">
+            <string>61 – 70</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="btnkilo_50_60">
+           <property name="text">
+            <string>50 – 60</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="btnkilo_71_80">
+           <property name="text">
+            <string>71 – 80 </string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="btnkilo_81_90">
+           <property name="text">
+            <string>81 – 90 </string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="btnkilo_91_100">
+           <property name="text">
+            <string>91-100</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="btnkilo_100plus">
+           <property name="text">
+            <string>100 üstü</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_5">
+         <item>
+          <widget class="QLabel" name="label_7">
+           <property name="text">
+            <string>5.  Eğitim Durumunuz:  </string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_5">
+           <item>
+            <widget class="QRadioButton" name="btnegitimdurumu_ilkokul">
+             <property name="text">
+              <string>İlkokul </string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="btnegitimdurumu_ortaokul">
+             <property name="text">
+              <string>Ortaokul</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="btnegitimdurumu_lise">
+             <property name="text">
+              <string> Lise	</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="btnegitimdurumu_on_lisans">
+             <property name="text">
+              <string>Ön Lisans</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="btnegitimdurumu_lisans">
+             <property name="text">
+              <string>Lisans	</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="btnegitimdurumu_lisansustu">
+             <property name="text">
+              <string>Lisansüstü</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_6">
+       <item>
+        <widget class="QLabel" name="label_8">
+         <property name="text">
+          <string>6.  İş yerindeki kıdeminiz:  </string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_6">
+         <item>
+          <widget class="QRadioButton" name="isyerikidem_usta">
+           <property name="text">
+            <string>Usta</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="isyerikidem_usta_basi">
+           <property name="text">
+            <string>Usta Başı </string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="isyerikidem_operator">
+           <property name="text">
+            <string>Operatör</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_7">
+       <item>
+        <widget class="QLabel" name="label_9">
+         <property name="text">
+          <string>7.  Üretim ortamındaki el aletlerini kullanma deneyiminiz var mı? </string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_7">
+         <item>
+          <widget class="QRadioButton" name="btnelaletikullanmadeneyimok">
+           <property name="text">
+            <string>Evet, var</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="btnelaletikullanmadeneyimnok">
+           <property name="text">
+            <string>Hayır, yok	</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_8">
+       <item>
+        <widget class="QLabel" name="label_10">
+         <property name="text">
+          <string>8.  7. Soruya ‘Evet’ yanıtını veren kullanıcılar için cevaplanacak sorudur.
+Yapmış olduğunuz iş profesyonel olarak el aletlerinin kullanımını gerektirmiyor mu? </string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_8">
+         <item>
+          <widget class="QRadioButton" name="profelaletiok">
+           <property name="text">
+            <string>Evet</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="profelaletinok">
+           <property name="text">
+            <string>Hayır</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_9">
+       <item>
+        <widget class="QLabel" name="label_11">
+         <property name="text">
+          <string>9.  8. Soruya ‘Evet’ yanıtını veren kullanıcılar için cevaplanacak sorudur.
+Profesyonel olarak bu işi ne kadar süredir yapıyorsunuz?</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_9">
+         <item>
+          <widget class="QRadioButton" name="prof_kullanim_zamani_1_5">
+           <property name="text">
+            <string>1-5 yıl</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="prof_kullanim_zamani_6_10">
+           <property name="text">
+            <string> 6 - 10 yıl</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="prof_kullanim_zamani_11_15">
+           <property name="text">
+            <string>11 - 15 yıl </string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="prof_kullanim_zamani_16_20">
+           <property name="text">
+            <string>16-20 yıl</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="prof_kullanim_zamani_20plus">
+           <property name="text">
+            <string>20 yıl üzeri</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_10">
+       <item>
+        <widget class="QLabel" name="label_12">
+         <property name="text">
+          <string>10. Üretimde kullanılan elektrikli el aletlerini kullanmaya yönelik fiziksel bir engeliniz bulunuyor mu? </string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_10">
+         <item>
+          <widget class="QRadioButton" name="btnengelok">
+           <property name="text">
+            <string>Evet</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="btnengelnok">
+           <property name="text">
+            <string>Hayır</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_11">
+       <item>
+        <widget class="QLabel" name="label_13">
+         <property name="text">
+          <string>11. Yaptığınız işten memnun musunuz?</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_11">
+         <item>
+          <widget class="QRadioButton" name="btnmemnum1">
+           <property name="text">
+            <string>Hiç Memnun Değilim</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="btnmemnum2">
+           <property name="text">
+            <string>Memnun Değilim</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="btnmemnum3">
+           <property name="text">
+            <string>Kararsızım</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="btnmemnum4">
+           <property name="text">
+            <string>Çok Memnunum</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="btnmemnum5">
+           <property name="text">
+            <string>Memnunum</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_12">
+         <item>
+          <widget class="QLabel" name="label_14">
+           <property name="text">
+            <string>Bu çalışma ile el aletini kullanma davranışınıza yönelik veri toplanacaktır ve bu verilerin doktora tezi kapsamında işlenmesine onay veriyorum. </string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_12">
+           <item>
+            <widget class="QRadioButton" name="btnonayok">
+             <property name="text">
+              <string>Evet</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QPushButton" name="save_button">
+       <property name="styleSheet">
+        <string notr="true">background-color: rgb(119, 118, 123);</string>
+       </property>
+       <property name="text">
+        <string>Kaydet</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1229</width>
+     <height>22</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
