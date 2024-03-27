@@ -25,6 +25,7 @@ import pandas as pd
 os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = os.fspath(
     Path(PyQt5.__file__).resolve().parent / "Qt5" / "plugins"
 )
+
 class DataReaderThread(QThread):
     data_received = pyqtSignal(str)
     Thread_Connection_Status=pyqtSignal(bool)
@@ -62,6 +63,7 @@ class MyMainWindow(QMainWindow):
         super(MyMainWindow, self).__init__()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+     
         # self.show_survey_form()
         self.serialportConnectionStatus=False
         self.data_dict = {
@@ -518,65 +520,44 @@ class MyMainWindow(QMainWindow):
         else:
             print("passs gecccc")
 
-    def save_keypoints_to_csv(self, hand_landmarks, keypoints_map, file_path):
-        # print(f"self.serialportConnectionStatus : {self.serialportConnectionStatus}")
+    def save_keypoints_to_csv_optimized(self, hand_landmarks, keypoints_map, file_path):
+        # Gerekli kontroller
+        if not (self.serialportConnectionStatus and self.Camera_Connection and not self.survey_data.empty):
+            return
+
+        # CSV dosyasına yazılacak verilerin hazırlanması
         headers = []
-        if(self.serialportConnectionStatus and self.Camera_Connection and (self.survey_data.empty is not True)):
-            print(f"veirleri csv e kayadediliyor")
-            data_pairs = {}
-            for pair in self.datapairs.split(','):
-                key, value = pair.split(':')
-                data_pairs[key.strip()] = value.strip()
+        row_data = []
 
-            data_pairs = {}
-            for pair in self.datapairs.split(','):
-                key, value = pair.split(':')
-                data_pairs[key.strip()] = value.strip()
-            if not os.path.exists(file_path):
-                with open(file_path, mode='a', newline='') as file:
-                    writer = csv.writer(file)
-                    for keypoint_name in keypoints_map.values():
-                        headers.extend([f"{keypoint_name}_x", f"{keypoint_name}_y"])
-                    for key, value in data_pairs.items():
-                        headers.extend([key])
-                    writer.writerow(headers)
+        # Data pairs ve survey pairs hazırlanıyor
+        data_pairs = {key.strip(): value.strip() for key, value in (pair.split(':') for pair in self.datapairs.split(','))}
+        survey_pairs = {key.strip(): str(value).strip() for data in self.survey_data.to_dict(orient='records') for key, value in data.items()}
 
-            with open(file_path, mode='a', newline='') as file:
-                writer = csv.writer(file)
-                row_data = []
-                for landmark_idx in range(21): 
-                    row_data = []
-                    for landmark in hand_landmarks.landmark:
-                        if landmark:  
-                            x = round(landmark.x * self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-                            y = round(landmark.y * self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-                        else:  
-                            x = -1
-                            y = -1
-                        row_data.extend([x, y])
+        # Headers hazırlanıyor
+        for keypoint_name in keypoints_map.values():
+            headers.extend([f"{keypoint_name}_x", f"{keypoint_name}_y"])
+        headers += list(data_pairs.keys()) + list(survey_pairs.keys())
 
-                
-                    for value in data_pairs.values():
-                        row_data.append(value)
+        # Hand landmarks verileri işleniyor
+        for landmark in hand_landmarks.landmark:
+            x, y = (-1, -1) if not landmark else (
+                round(landmark.x * self.cap.get(cv2.CAP_PROP_FRAME_WIDTH)),
+                round(landmark.y * self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+            )
+            row_data.extend([x, y])
 
-                    writer.writerow(row_data)
-            
-                         
-                
+        # Data pairs ve survey pairs verileri ekleniyor
+        row_data += list(data_pairs.values()) + list(survey_pairs.values())
 
-            # data_dicts = self.survey_data.to_dict(orient='records')
-            # with open(file_path, mode='a', newline='', encoding='utf-8') as file:
-            #     fieldnames = data_dicts[0].keys() 
-            #     writer = csv.DictWriter(file, fieldnames=fieldnames)
+        # Dosya yoksa başlık yazılıyor, veri her durumda ekleniyor
+        mode = 'w' if not os.path.exists(file_path) else 'a'
+        with open(file_path, mode=mode, newline='') as file:
+            writer = csv.writer(file)
+            if mode == 'w':
+                writer.writerow(headers)  # Sadece yeni dosya oluşturulduğunda başlıklar yazılır
+            writer.writerow(row_data)  # Verilerin dosyaya yazılması
 
-            #     writer.writeheader()  
-
-                
-            #     for data_dict in data_dicts:
-            #         writer.writerow(data_dict)
-              
-        else:
-            pass
+        print("Veriler başarıyla kaydedildi.")
 
             
     def update_table(self, hand_landmarks):  
@@ -617,7 +598,7 @@ class MyMainWindow(QMainWindow):
 
                 
                     hand_landmarks_to_save = results.multi_hand_landmarks[0]  
-                    self.save_keypoints_to_csv(hand_landmarks_to_save, self.keypoints_map, 'hand_keypoints.csv')
+                    self.save_keypoints_to_csv_optimized(hand_landmarks_to_save, self.keypoints_map, 'hand_keypoints.csv')
 
                 img_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 h, w, ch = img_rgb.shape
