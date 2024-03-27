@@ -1,6 +1,8 @@
 import csv
 import re
+from datetime import datetime
 import sys
+import traceback
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidgetItem
 from design.output import Ui_MainWindow
 from PyQt5.QtCore import QTimer, Qt
@@ -31,9 +33,6 @@ class DataReaderThread(QThread):
         self.serial_connection = serial_connection
         self.running = True
         
-
-        
-
    
     def run(self):
         while self.running:
@@ -79,26 +78,29 @@ class MyMainWindow(QMainWindow):
         self.datapairs=None
         self.writedatacsv=False
         self.serial_connection = None
+        self.Camera_Connection=None
         self.ui.actionConnect.triggered.connect(self.Start_Communication)
+        self.ui.btn_serial_connect.clicked.connect(self.ConnectSerial)
+        self.ui.btn_serial_connect.clicked.connect(self.FindSerialPort)
         self.ui.resfreshbtn.clicked.connect(self.FindSerialPort)
-        self.cap = cv2.VideoCapture(2)  
+        self.ui.btn_capture_connect.clicked.connect(self.CaptureValueSet)        
+
+        self.cap = None
         self.groupbutton_list=[]
         self.current_tab_index=None
         self.baud_rates = [9600, 19200, 115200]
         self.ui.comboBaud.addItems([str(baud) for baud in self.baud_rates])
         self.data_bits = [serial.FIVEBITS, serial.SIXBITS, serial.SEVENBITS, serial.EIGHTBITS]
         self.parities = [serial.PARITY_NONE, serial.PARITY_EVEN, serial.PARITY_ODD]
-        self.stop_bits = [serial.STOPBITS_ONE, serial.STOPBITS_ONE_POINT_FIVE, serial.STOPBITS_TWO]
+        self.stop_bits = serial.STOPBITS_ONE
         self.ui.comboData.addItems([str(bits) for bits in self.data_bits])
         self.ui.comboParity.addItems([str(parity) for parity in self.parities])
-        self.ui.comboStop.addItems([str(stop_bits) for stop_bits in self.stop_bits])
+        
         
         self.results = []
-
-        
         self.timer = QTimer(self)
-        self.timer.timeout.connect(self.update_frame)
-        self.timer.start(5)  
+        self.survey_data=None
+     
 
         
         self.mp_hands = mp.solutions.hands
@@ -134,6 +136,7 @@ class MyMainWindow(QMainWindow):
             20: "Serçe Parmak: İkinci Ekleme-Ucu (Little finger: Tip)"
         }
         self.ui.save_button_3.clicked.connect(self.save_data)
+        self.ui.btn_reset_survey.clicked.connect(self.Survey_Screen_Reload)
         self.cinsiyet_group = QButtonGroup()
         self.cinsiyet_group.addButton(self.ui.male_btn,1)
         self.cinsiyet_group.addButton(self.ui.female_btn,2)
@@ -235,8 +238,27 @@ class MyMainWindow(QMainWindow):
                     button.setChecked(False)
                     print(f"Unchecked button: {button}")
             buttonGroup.setExclusive(True)  # Grubun tekrar yalnızca bir seçime izin vermesini sağlamak için kullanıyoruz.
-        
 
+    
+    def Survey_Nullable_Check(self):
+        counter=0
+        for buttonGroup in self.groupbutton_list:
+            buttonList = buttonGroup.buttons()  
+            buttonList_len = len(buttonList)  
+            
+            for button in buttonList:
+                    
+                if button.isChecked():
+                    counter+=1
+                    print(f"len(self.groupbutton_list) : {len(self.groupbutton_list)}")
+                    print(f"counter : {counter}")
+
+        if(len(self.groupbutton_list)!=counter):
+            QtWidgets.QMessageBox.critical(self.ui.groupBox, "Survey Error", "Anketi tamamlayınız !!!")
+            return False
+        elif(len(self.groupbutton_list)==counter):
+            return True
+                    
     def column_name_Add_survey_csv(self,csv_file):
 
         if os.path.exists(csv_file):
@@ -245,65 +267,96 @@ class MyMainWindow(QMainWindow):
             mode = 'w'  
             with open(csv_file, mode='w', newline='') as file:
                 writer = csv.writer(file)
-                writer.writerow(["Cinsiyet", "Yaş", "Boy", "Kilo", "Eğitim Durumu", "İş Yerindeki Kıdem Durumu", "El_Aleti_Kullanma_Deneyimi", "El_Aleti_Kullanma_Gerekliliği", "Profolarak_çalışma_zamani", "Elaleti_Kullanma_Fiziksel_Engel", "Yaptiginiz_İsten_Memnun_Musunuz", "Verilerin_Kullanilmasi"])  
-     
+      
+                writer.writerow(["Cinsiyet", "Yaş", "Boy", "Kilo", "Eğitim Durumu", "İş Yerindeki Kıdem Durumu", "El_Aleti_Kullanma_Deneyimi", "El_Aleti_Kullanma_Gerekliliği", "Profolarak_çalışma_zamani", "Elaleti_Kullanma_Fiziksel_Engel", "Yaptiginiz_İsten_Memnun_Musunuz", "Verilerin_Kullanilmasi"]) 
+
+    def CaptureReadTimer(self,time=1):
+        self.timer.timeout.connect(self.update_frame)
+        self.timer.start(time)  
+
+    def CaptureValueSet(self):   
+        try:
+            capture_index=int(self.ui.Capture_Combo.currentText())
+            self.cap=cv2.VideoCapture(capture_index)  
+            if(self.cap.isOpened()):
+                self.CaptureReadTimer()
+                self.Camera_Connection=True
+            
+            else:
+                self.Camera_Connection=False
+            
+                QtWidgets.QMessageBox.critical(self.ui.groupBox, "Capture Connection Error", "can't open camera by index  tekrardan bağlantı deneyin !!!")
+
+        except Exception as ex:
+            error_message = f"CaptureValueSet hata oluştu hata: {traceback.format_exc()} "
+            self.Camera_Connection=False
+            print(error_message)
+        finally:    
+            self.CaptureConenctionStatusChange()
+
     def save_data(self):
-        self.Survey_Screen_Reload()
-        csv_file = "anket_verileri.csv"
+        survey_Result=self.Survey_Nullable_Check()
+        if(survey_Result):
+            self.survey_data=None
 
-        self.column_name_Add_survey_csv(csv_file)
-        
-        with open( csv_file , mode="a", newline='') as file:
-            writer = csv.writer(file)
-           
-            selected_cinsiyet_button = self.cinsiyet_group.checkedButton()
-            cinsiyet=self.CheckButtonGroupId(selected_cinsiyet_button,self.cinsiyet_group)
+            csv_file = "anket_verileri.csv"
 
-            selected_yas_button = self.yas_group.checkedButton()
-            yas=self.CheckButtonGroupId(selected_yas_button,self.yas_group)
-   
-            selected_boy_button = self.boy_group.checkedButton()
-            boy=self.CheckButtonGroupId(selected_boy_button,self.boy_group)
-
-            selected_kilo_button = self.kilo_group.checkedButton()
-            kilo=self.CheckButtonGroupId(selected_kilo_button,self.kilo_group)
-
-            selected_egitim_durumu_button = self.egitim_durumu_group.checkedButton()
-            egitim_durumu=self.CheckButtonGroupId(selected_egitim_durumu_button,self.egitim_durumu_group)
-
-            isyerindeki_kidem_durumu_button = self.isyerindeki_kidem_durumu_group.checkedButton()
-            isyerindeki_kidem_durumu=self.CheckButtonGroupId(isyerindeki_kidem_durumu_button,self.isyerindeki_kidem_durumu_group)
-
-            elaleti_kullanma_deneyimi_button = self.elaleti_kullanma_deneyimi_group.checkedButton()
-            elaleti_kullanma_deneyimi=self.CheckButtonGroupId(elaleti_kullanma_deneyimi_button,self.elaleti_kullanma_deneyimi_group)
+            self.column_name_Add_survey_csv(csv_file)
             
-
-            elaleti_kullanma_gerekliligi_button = self.elaleti_kullanma_gerekliligi_group.checkedButton()
-            elaleti_kullanma_gerekliligi=self.CheckButtonGroupId(elaleti_kullanma_gerekliligi_button,self.elaleti_kullanma_gerekliligi_group)
-
-
-            prof_kullanim_zamani_button = self.prof_kullanim_zamani_group.checkedButton()
-            prof_kullanim_zamani=self.CheckButtonGroupId(prof_kullanim_zamani_button,self.prof_kullanim_zamani_group)
-
-
-            elaleti_kullanma_fiziksel_engel_button = self.elaleti_kullanma_fiziksel_engel_group.checkedButton()
-            elaleti_kullanma_fiziksel_engel=self.CheckButtonGroupId(elaleti_kullanma_fiziksel_engel_button,self.elaleti_kullanma_fiziksel_engel_group)
-
-            yaptiginiz_isten_memnun_musunuz_button = self.yaptiginiz_isten_memnun_musunuz_group.checkedButton()
-            yaptiginiz_isten_memnun_musunuz=self.CheckButtonGroupId(yaptiginiz_isten_memnun_musunuz_button,self.yaptiginiz_isten_memnun_musunuz_group)
-
-
-            verilerin_kullanilmasi_button = self.verilerin_kullanilmasi_group.checkedButton()
-            verilerin_kullanilmasi=self.CheckButtonGroupId(verilerin_kullanilmasi_button,self.verilerin_kullanilmasi_group)
+            with open( csv_file , mode="a", newline='') as file:
+                writer = csv.writer(file)
             
-            
-            writer.writerow([cinsiyet, yas, boy, kilo, egitim_durumu, isyerindeki_kidem_durumu, elaleti_kullanma_deneyimi, elaleti_kullanma_gerekliligi, prof_kullanim_zamani, elaleti_kullanma_fiziksel_engel, yaptiginiz_isten_memnun_musunuz, verilerin_kullanilmasi])
-            print(f"writer : {writer}")
+                selected_cinsiyet_button = self.cinsiyet_group.checkedButton()
+                cinsiyet=self.CheckButtonGroupId(selected_cinsiyet_button,self.cinsiyet_group)
+
+                selected_yas_button = self.yas_group.checkedButton()
+                yas=self.CheckButtonGroupId(selected_yas_button,self.yas_group)
+    
+                selected_boy_button = self.boy_group.checkedButton()
+                boy=self.CheckButtonGroupId(selected_boy_button,self.boy_group)
+
+                selected_kilo_button = self.kilo_group.checkedButton()
+                kilo=self.CheckButtonGroupId(selected_kilo_button,self.kilo_group)
+
+                selected_egitim_durumu_button = self.egitim_durumu_group.checkedButton()
+                egitim_durumu=self.CheckButtonGroupId(selected_egitim_durumu_button,self.egitim_durumu_group)
+
+                isyerindeki_kidem_durumu_button = self.isyerindeki_kidem_durumu_group.checkedButton()
+                isyerindeki_kidem_durumu=self.CheckButtonGroupId(isyerindeki_kidem_durumu_button,self.isyerindeki_kidem_durumu_group)
+
+                elaleti_kullanma_deneyimi_button = self.elaleti_kullanma_deneyimi_group.checkedButton()
+                elaleti_kullanma_deneyimi=self.CheckButtonGroupId(elaleti_kullanma_deneyimi_button,self.elaleti_kullanma_deneyimi_group)
+                
+
+                elaleti_kullanma_gerekliligi_button = self.elaleti_kullanma_gerekliligi_group.checkedButton()
+                elaleti_kullanma_gerekliligi=self.CheckButtonGroupId(elaleti_kullanma_gerekliligi_button,self.elaleti_kullanma_gerekliligi_group)
 
 
-        print(f"csv_file : {csv_file}")
-        csv_data=pd.read_csv(csv_file)
-        print(f"csv_data : {csv_data}")
+                prof_kullanim_zamani_button = self.prof_kullanim_zamani_group.checkedButton()
+                prof_kullanim_zamani=self.CheckButtonGroupId(prof_kullanim_zamani_button,self.prof_kullanim_zamani_group)
+
+
+                elaleti_kullanma_fiziksel_engel_button = self.elaleti_kullanma_fiziksel_engel_group.checkedButton()
+                elaleti_kullanma_fiziksel_engel=self.CheckButtonGroupId(elaleti_kullanma_fiziksel_engel_button,self.elaleti_kullanma_fiziksel_engel_group)
+
+                yaptiginiz_isten_memnun_musunuz_button = self.yaptiginiz_isten_memnun_musunuz_group.checkedButton()
+                yaptiginiz_isten_memnun_musunuz=self.CheckButtonGroupId(yaptiginiz_isten_memnun_musunuz_button,self.yaptiginiz_isten_memnun_musunuz_group)
+
+
+                verilerin_kullanilmasi_button = self.verilerin_kullanilmasi_group.checkedButton()
+                verilerin_kullanilmasi=self.CheckButtonGroupId(verilerin_kullanilmasi_button,self.verilerin_kullanilmasi_group)
+                
+                
+                writer.writerow([cinsiyet, yas, boy, kilo, egitim_durumu, isyerindeki_kidem_durumu, elaleti_kullanma_deneyimi, elaleti_kullanma_gerekliligi, prof_kullanim_zamani, elaleti_kullanma_fiziksel_engel, yaptiginiz_isten_memnun_musunuz, verilerin_kullanilmasi])
+                print(f"writer : {writer}")
+
+
+            print(f"csv_file : {csv_file}")
+            self.survey_data=pd.read_csv(csv_file)
+            print(f"self.survey_data : {self.survey_data}")
+            self.Survey_Screen_Reload()
+            QtWidgets.QMessageBox.information(self.ui.groupBox, "Survey", "Anket tamamlandı teşekkür ederiz :)")
+
 
     def start_reading_thread(self):
         if self.serial_connection and self.serial_connection.is_open:
@@ -347,10 +400,6 @@ class MyMainWindow(QMainWindow):
         # print(f"data_Received  : {data}")
         self.ui.serialportresulttxt.append(data)
     
-    def SerialPortConfigNullCheck(self):
-        pass
-
-
     def SerialPortConenctionStatusChange(self,data):
         # print(f"SerialPortConenctionStatusChange : {data}")
         self.serialportConnectionStatus=data
@@ -359,6 +408,13 @@ class MyMainWindow(QMainWindow):
         else:
             QtWidgets.QMessageBox.critical(self.ui.groupBox, "SerialPortConnection Error", "Portları tekrardan listeleyip bağlantı deneyin !!!")
             self.ui.serialport_dial.setStyleSheet("background-color: rgb(0,0,255);")
+
+    def CaptureConenctionStatusChange(self):
+        # print(f"SerialPortConenctionStatusChange : {data}")
+        if(self.Camera_Connection):
+            self.ui.camera_dial.setStyleSheet("background-color: rgb(0,255,0);")
+        else:
+            self.ui.camera_dial.setStyleSheet("background-color: rgb(0,0,255);")
 
 
     def parse_data(self, data):
@@ -384,16 +440,23 @@ class MyMainWindow(QMainWindow):
             return None
 
     def Start_Communication(self):
-        
-        self.serial_connection=None
-        self.TCP_connection = None
-        self.current_tab_index = self.ui.tabWidget_2.currentIndex()
+        # self.serial_connection=None
+        # self.Camera_Connection = None
         # print(f"self.current_tab_index  : {self.current_tab_index }")
-       
-        self.ConnectSerial()
+        # self.CaptureValueSet()
+        if(self.serial_connection==False or self.serial_connection==None):
+            self.ConnectSerial()
+        else:
+            print("seriport bağlı pass  gec")
+        if(self.Camera_Connection==False or self.Camera_Connection==None):
+            self.CaptureValueSet()
+        else:
+            print("camera  bağlı pass  gec")
 
-    def FindSerialPort(self):
-        # print("FindSerialPort başladı")
+        
+
+    def FindSerialPort(self): 
+        print("FindSerialPort başladı")
         if sys.platform.startswith('win'):
             ports = ['COM%s' % (i + 1) for i in range(256)]
         elif sys.platform.startswith('linux') or sys.platform.startswith('cygwin'):
@@ -418,49 +481,57 @@ class MyMainWindow(QMainWindow):
                 pass
             
     def ConnectSerial(self):
-        port = self.ui.comboPort.currentText()
-        print(f"serial Port : {port}")
-        baud_rate = int(self.ui.comboBaud.currentText())
-        print(f"baud_rate : {baud_rate}")
-        data_bits = self.data_bits[self.ui.comboData.currentIndex()]
-        print(f"data_bits :  {data_bits} ")
-        parity = self.parities[self.ui.comboParity.currentIndex()]
-        print(f"parity : {parity}")
-        stop_bits = self.stop_bits[self.ui.comboStop.currentIndex()]
-        print(f"stop_bits : {stop_bits}")
-        if(port==None or port==""):
-            QtWidgets.QMessageBox.critical(self.ui.groupBox, "SerialPort Error", "Hedef Portu seçiniz !!!")
-            return
-        if self.serial_connection and self.serial_connection.is_open:
-            self.serial_connection.close()
+        print(f"self.serialportConnectionStatus : {self.serialportConnectionStatus}")
+        if(self.serialportConnectionStatus!=True):
+            port = self.ui.comboPort.currentText()
+            print(f"serial Port : {port}")
+            baud_rate = int(self.ui.comboBaud.currentText())
+            print(f"baud_rate : {baud_rate}")
+            data_bits = self.data_bits[self.ui.comboData.currentIndex()]
+            print(f"data_bits :  {data_bits} ")
+            parity = self.parities[self.ui.comboParity.currentIndex()]
+            print(f"parity : {parity}")
+            stop_bits = self.stop_bits
+            print(f"stop_bits : {stop_bits}")
+            if(port==None or port==""):
+                QtWidgets.QMessageBox.critical(self.ui.groupBox, "SerialPort Error", "Hedef Portu seçiniz !!!")
+                return
+            if self.serial_connection and self.serial_connection.is_open:
+                self.serial_connection.close()
 
-        try:
-            self.serial_connection = serial.Serial(
-                port=port,
-                baudrate=baud_rate,
-                bytesize=data_bits,
-                parity=parity,
-                stopbits=stop_bits
-            )
-            self.ui.statusBar.showMessage("Connected to " + port)
-            self.serialportConnectionStatus=True
-            self.start_reading_thread()
+            try:
+                self.serial_connection = serial.Serial(
+                    port=port,
+                    baudrate=baud_rate,
+                    bytesize=data_bits,
+                    parity=parity,
+                    stopbits=stop_bits
+                )
+                self.ui.statusBar.showMessage("Connected to " + port)
+                self.serialportConnectionStatus=True
+                self.start_reading_thread()
 
-        except Exception as e:
-            self.ui.statusBar.showMessage("Connection failed: " + str(e))   
-            self.serialportConnectionStatus=False
-            # print(str(e))     
+            except Exception as e:
+                self.ui.statusBar.showMessage("Connection failed: " + str(e))   
+                self.serialportConnectionStatus=False
+                print(str(e))     
+        else:
+            print("passs gecccc")
 
     def save_keypoints_to_csv(self, hand_landmarks, keypoints_map, file_path):
         # print(f"self.serialportConnectionStatus : {self.serialportConnectionStatus}")
         headers = []
-        if(self.serialportConnectionStatus):
-            # print(f"self.datapairs : {self.datapairs}")
+        if(self.serialportConnectionStatus and self.Camera_Connection and (self.survey_data.empty is not True)):
+            print(f"veirleri csv e kayadediliyor")
             data_pairs = {}
             for pair in self.datapairs.split(','):
                 key, value = pair.split(':')
                 data_pairs[key.strip()] = value.strip()
 
+            data_pairs = {}
+            for pair in self.datapairs.split(','):
+                key, value = pair.split(':')
+                data_pairs[key.strip()] = value.strip()
             if not os.path.exists(file_path):
                 with open(file_path, mode='a', newline='') as file:
                     writer = csv.writer(file)
@@ -489,12 +560,26 @@ class MyMainWindow(QMainWindow):
                         row_data.append(value)
 
                     writer.writerow(row_data)
+            
+                         
+                
+
+            # data_dicts = self.survey_data.to_dict(orient='records')
+            # with open(file_path, mode='a', newline='', encoding='utf-8') as file:
+            #     fieldnames = data_dicts[0].keys() 
+            #     writer = csv.DictWriter(file, fieldnames=fieldnames)
+
+            #     writer.writeheader()  
+
+                
+            #     for data_dict in data_dicts:
+            #         writer.writerow(data_dict)
+              
         else:
             pass
 
             
-    def update_table(self, hand_landmarks):
-        
+    def update_table(self, hand_landmarks):  
         self.ui.resulttableWidget.setRowCount(0)
         for idx, landmark in enumerate(hand_landmarks.landmark):
             x = round(landmark.x * self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -503,7 +588,6 @@ class MyMainWindow(QMainWindow):
             
 
     def add_row_to_table(self, idx, x, y):
-     
         row_position = self.ui.resulttableWidget.rowCount()
         self.ui.resulttableWidget.insertRow(row_position)
         item = QTableWidgetItem(self.keypoints_map.get(idx, f'Keypoint {idx}'))
@@ -516,53 +600,42 @@ class MyMainWindow(QMainWindow):
         self.ui.resulttableWidget.setColumnWidth(0, width)  
 
     def update_frame(self):
-        ret, frame = self.cap.read()  
-        
-        if ret:
-            img_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            img_rgb.flags.writeable = False  
-            results = self.hands.process(img_rgb)  
+        try:
+
+            ret, frame = self.cap.read()  
             
-            if results.multi_hand_landmarks:
-                for hand_landmarks in results.multi_hand_landmarks:
-                    self.mp_draw.draw_landmarks(frame, hand_landmarks, self.mp_hands.HAND_CONNECTIONS)
-                    self.update_table(hand_landmarks)
+            if ret:
+                self.Camera_Connection=True
+                img_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                img_rgb.flags.writeable = False  
+                results = self.hands.process(img_rgb)  
+                
+                if results.multi_hand_landmarks:
+                    for hand_landmarks in results.multi_hand_landmarks:
+                        self.mp_draw.draw_landmarks(frame, hand_landmarks, self.mp_hands.HAND_CONNECTIONS)
+                        self.update_table(hand_landmarks)
 
-               
-                hand_landmarks_to_save = results.multi_hand_landmarks[0]  
-                self.save_keypoints_to_csv(hand_landmarks_to_save, self.keypoints_map, 'hand_keypoints.csv')
+                
+                    hand_landmarks_to_save = results.multi_hand_landmarks[0]  
+                    self.save_keypoints_to_csv(hand_landmarks_to_save, self.keypoints_map, 'hand_keypoints.csv')
 
-            img_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            h, w, ch = img_rgb.shape
-            bytes_per_line = ch * w
-            q_img = QImage(img_rgb.data, w, h, bytes_per_line, QImage.Format_RGB888)
-            
-            pixmap = QPixmap.fromImage(q_img)
-            self.ui.videocapturelabel.setPixmap(pixmap)
+                img_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                h, w, ch = img_rgb.shape
+                bytes_per_line = ch * w
+                q_img = QImage(img_rgb.data, w, h, bytes_per_line, QImage.Format_RGB888)
+                
+                pixmap = QPixmap.fromImage(q_img)
+                self.ui.videocapturelabel.setPixmap(pixmap)
+            else:
+                self.Camera_Connection=False
 
-    # def show_survey_form(self):
-    #     self.survey_form = SurveyForm()
-    #     self.survey_form.survey_saved.connect(self.on_survey_saved)  # Sinyali bağla
-    #     self.survey_form.show()
-
-    # def on_survey_saved(self, csv_file_path):
-    #     # Sinyali ele alacak slot
-    #     self.df = pd.read_csv(csv_file_path)  # CSV'yi bir DataFrame'e oku
-    # #     print(f"gelennnnnnnnnnnnnnnndataaaa: {self.df}") 
-# def main():
-
-#     app = QApplication(sys.argv)
-#     def mainwindowshow():
-#         main_window = MyMainWindow()
-#         main_window.show()
-#         sys.exit(app.exec_())  
-
-    
-#     anket_window = SurveyForm()
-#     result = anket_window.exec_()
-    
-#     if result == QDialog.Accepted:
-#         mainwindowshow()
+        except Exception as e:
+            current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            error_message = f"{current_datetime} - update_frame hata oluştu hata: {traceback.format_exc()} "
+            print(error_message)
+            self.Camera_Connection=False
+        finally:
+            self.CaptureConenctionStatusChange()
 
 if __name__ == "__main__":
     # main()
